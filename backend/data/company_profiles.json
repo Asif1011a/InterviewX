@@ -1,0 +1,50 @@
+{
+  "Amazon": {
+    "style": "Behavioral-heavy with Leadership Principles. STAR format mandatory. Obsessed with metrics and scale.",
+    "question_mix": {"behavioral": 4, "technical": 2, "system_design": 1},
+    "red_flags": ["vague answers", "no metrics", "no ownership"],
+    "tips": ["Always mention scale and impact", "Reference Leadership Principles", "Use specific numbers"]
+  },
+  "Google": {
+    "style": "Algorithmic thinking + system design. Prefers structured problem solving. Values creativity.",
+    "question_mix": {"technical": 4, "behavioral": 2, "system_design": 2},
+    "red_flags": ["brute force only", "no trade-off analysis", "not asking clarifying questions"],
+    "tips": ["Think aloud always", "Analyze time/space complexity", "Ask clarifying questions first"]
+  },
+  "Microsoft": {
+    "style": "Growth mindset + collaborative problem solving. Mix of coding and design.",
+    "question_mix": {"technical": 3, "behavioral": 3, "system_design": 1},
+    "red_flags": ["arrogance", "no collaboration signals", "incomplete solutions"],
+    "tips": ["Show growth mindset", "Mention teamwork", "Think through edge cases"]
+  },
+  "TCS": {
+    "style": "HR-heavy with technical aptitude. Values process knowledge and adaptability.",
+    "question_mix": {"hr": 4, "technical": 2, "behavioral": 2},
+    "red_flags": ["overconfidence", "no flexibility", "poor communication"],
+    "tips": ["Show willingness to learn", "Prepare 'tell me about yourself'", "Know your resume cold"]
+  },
+  "Infosys": {
+    "style": "Aptitude + technical basics + HR. Communication is key.",
+    "question_mix": {"hr": 3, "technical": 3, "behavioral": 2},
+    "red_flags": ["weak communication", "unclear answers", "no examples"],
+    "tips": ["Be clear and concise", "Show eagerness", "Prepare situational answers"]
+  },
+  "Wipro": {
+    "style": "Technical fundamentals + HR. Values process and teamwork.",
+    "question_mix": {"technical": 3, "hr": 3, "behavioral": 2},
+    "red_flags": ["arrogance", "poor attitude", "no team examples"],
+    "tips": ["Highlight projects", "Show adaptability", "Be professional"]
+  },
+  "Startup": {
+    "style": "Fast-paced problem solving. Ownership mentality. Comfort with ambiguity.",
+    "question_mix": {"technical": 3, "behavioral": 3, "project": 2},
+    "red_flags": ["risk averse", "no initiative examples", "needs heavy supervision"],
+    "tips": ["Show startup mentality", "Emphasize shipping fast", "Highlight self-driven work"]
+  },
+  "General": {
+    "style": "Balanced mix of technical and behavioral questions tailored to the role.",
+    "question_mix": {"technical": 2, "behavioral": 2, "project": 1, "hr": 1},
+    "red_flags": ["unpreparedness", "vague answers", "no examples"],
+    "tips": ["Use STAR format", "Quantify achievements", "Prepare 3-4 strong stories"]
+  }
+}

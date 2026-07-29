@@ -1,0 +1,47 @@
+{
+  "Software Engineer": {
+    "Fresher": {"expected_score": 60, "key_skills": ["DSA", "OOP", "OS basics", "Git", "One language"]},
+    "Mid": {"expected_score": 72, "key_skills": ["System Design", "APIs", "Databases", "Testing"]},
+    "Senior": {"expected_score": 85, "key_skills": ["Architecture", "Scalability", "Leadership", "Mentoring"]}
+  },
+  "Data Analyst": {
+    "Fresher": {"expected_score": 58, "key_skills": ["SQL", "Excel", "Basic Python", "Data Viz"]},
+    "Mid": {"expected_score": 70, "key_skills": ["Advanced SQL", "Pandas", "Dashboarding", "Statistics"]},
+    "Senior": {"expected_score": 83, "key_skills": ["ML basics", "Data Pipelines", "Business Insight", "Leadership"]}
+  },
+  "Data Scientist": {
+    "Fresher": {"expected_score": 60, "key_skills": ["Python", "ML basics", "Statistics", "Pandas"]},
+    "Mid": {"expected_score": 73, "key_skills": ["Advanced ML", "Feature Engineering", "Model Deployment"]},
+    "Senior": {"expected_score": 85, "key_skills": ["Deep Learning", "MLOps", "Research", "Strategy"]}
+  },
+  "Product Manager": {
+    "Fresher": {"expected_score": 62, "key_skills": ["Product Thinking", "Communication", "Basic Analytics"]},
+    "Mid": {"expected_score": 74, "key_skills": ["Roadmapping", "Stakeholder Mgmt", "A/B Testing"]},
+    "Senior": {"expected_score": 86, "key_skills": ["Strategy", "Vision", "P&L", "Team Leadership"]}
+  },
+  "Frontend Developer": {
+    "Fresher": {"expected_score": 58, "key_skills": ["HTML/CSS", "JavaScript", "React basics"]},
+    "Mid": {"expected_score": 70, "key_skills": ["React/Next.js", "State Management", "Performance"]},
+    "Senior": {"expected_score": 83, "key_skills": ["Architecture", "Testing", "DevOps", "Mentoring"]}
+  },
+  "Backend Developer": {
+    "Fresher": {"expected_score": 60, "key_skills": ["APIs", "Databases", "One language", "Git"]},
+    "Mid": {"expected_score": 72, "key_skills": ["System Design", "Caching", "Microservices", "Security"]},
+    "Senior": {"expected_score": 85, "key_skills": ["Scalability", "Architecture", "DevOps", "Leadership"]}
+  },
+  "ML Engineer": {
+    "Fresher": {"expected_score": 62, "key_skills": ["Python", "ML Frameworks", "Math basics"]},
+    "Mid": {"expected_score": 74, "key_skills": ["MLOps", "Model Serving", "Feature Stores"]},
+    "Senior": {"expected_score": 86, "key_skills": ["LLMs", "Platform Design", "Research", "Leadership"]}
+  },
+  "DevOps Engineer": {
+    "Fresher": {"expected_score": 58, "key_skills": ["Linux", "Docker", "CI/CD basics", "Git"]},
+    "Mid": {"expected_score": 71, "key_skills": ["Kubernetes", "Terraform", "Monitoring", "Cloud"]},
+    "Senior": {"expected_score": 84, "key_skills": ["Platform Engineering", "SRE", "Security", "Leadership"]}
+  },
+  "Full Stack Developer": {
+    "Fresher": {"expected_score": 60, "key_skills": ["HTML/CSS/JS", "React", "Node.js", "Databases"]},
+    "Mid": {"expected_score": 72, "key_skills": ["System Design", "APIs", "DevOps basics", "Testing"]},
+    "Senior": {"expected_score": 85, "key_skills": ["Architecture", "Scalability", "Mentoring", "Leadership"]}
+  }
+}

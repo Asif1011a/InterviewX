@@ -1,0 +1,15 @@
+INFO:     Will watch for changes in these directories: ['c:\\Users\\zamza\\OneDrive\\Documents\\agentvers\\backend']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [22348] using WatchFiles
+INFO:     Started server process [28588]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'routers\resume.py'. Reloading...
+ INFO:     127.0.0.1:25049 - "OPTIONS /progress/student/asif/history HTTP/1.1" 200 OK
+INFO:     127.0.0.1:25049 - "GET /progress/student/asif/history HTTP/1.1" 200 OK
+INFO:     127.0.0.1:23558 - "POST /resume/upload HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:21763 - "POST /resume/upload HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:22845 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33630 - "POST /resume/upload HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:23115 - "POST /resume/upload HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:4352 - "POST /resume/upload HTTP/1.1" 404 Not Found
