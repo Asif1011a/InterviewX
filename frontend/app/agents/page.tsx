@@ -36,8 +36,24 @@ export const AGENT_DETAILS: AgentDetail[] = [
     systemPromptStrategy: 'Uses 4,000-character context window protection with defensive JSON regex extraction to prevent parsing errors.',
     inputSchema: ['resume_text', 'target_role'],
     outputSchema: ['skills', 'projects', 'role_fit_score', 'summary'],
-    sampleInput: { resume: 'Fullstack SDE with 3 yrs React, Node.js, Python, PostgreSQL, Redis experience.', role: 'Senior Software Engineer' },
-    sampleOutput: { role_fit_score: 84, top_skills: ['React', 'Node.js', 'Python', 'PostgreSQL', 'Redis'], missing_skills: ['System Design', 'Docker'], summary: 'Solid technical background in full-stack web development.' }
+    sampleInput: {
+      resume: `JAYANTH S S | AIDS Engineer\nEmail: jayanth.ss2024aids@sece.ac.in | Institution: Sri Eshwar College of Engineering (CGPA: 7.8)\nLeetCode Rank: #180,952 (100 Solved) | SkillRack Rank: #57,447 (550+ Solved)\n\nTECHNICAL SKILLS:\n- Languages: Python, JavaScript, TypeScript, HTML5, CSS3, SQL\n- Frontend: React.js, Next.js 16, Tailwind CSS, State Management, Web Speech STT/TTS API\n- Backend: Node.js, Express.js, FastAPI, RESTful APIs, Microservices, AsyncIO\n- Databases & AI: MongoDB, PostgreSQL, Redis Caching, Groq Llama 3.1 8B LLM, RAG Pipeline\n- Tools & DevOps: Git, GitHub Actions, Docker Containers, Vercel, Postman\n\nKEY PROJECTS:\n1. InterviewX: AI Placement Mission Control Observatory (Fullstack MERN + 21-Agent Groq Architecture)\n   - Architected 21 multi-agent DAG pipeline executing Groq LLM inference (~380ms latency).\n   - Integrated HTML5 Speech-to-Text, 3D Canvas Brain Neural Synapse Mesh, and optical Eye-Gaze Tracking.\n2. Real-Time Eye Contact & Posture Telemetry Monitor\n   - Engineered optical frame delta analysis engine running at 30 FPS for live candidate attentiveness scoring.\n\nACHIEVEMENTS & CERTIFICATIONS:\n- Solved 550+ algorithmic challenges on SkillRack and 100+ problems on LeetCode.\n- Verified AI Placement & Software Development Engineer Badge from Sri Eshwar College of Engineering.`,
+      role: 'Full Stack Software Engineer @ Amazon'
+    },
+    sampleOutput: {
+      candidate_name: 'Jayanth S S',
+      institution: 'Sri Eshwar College of Engineering',
+      degree: 'B.Tech Artificial Intelligence & Data Science (CGPA: 7.8)',
+      role_fit_score: 88,
+      top_skills: ['Python', 'React.js', 'Next.js 16', 'Node.js', 'FastAPI', 'MongoDB', 'Redis', 'Groq LLM RAG', 'Git'],
+      projects_analyzed: [
+        { name: 'InterviewX: AI Placement Mission Control Observatory', complexity: 'Advanced Multi-Agent DAG Architecture', tech_stack: ['Next.js 16', 'FastAPI', 'Groq LLM', 'MongoDB'] },
+        { name: 'Real-Time Eye Contact & Posture Telemetry Monitor', complexity: '30 FPS HTML5 Optical Motion Engine', tech_stack: ['TypeScript', 'Canvas API', 'WebGL'] }
+      ],
+      achievements: ['SkillRack: 550+ Solved (Rank #57,447)', 'LeetCode: 100 Solved (Rank #180,952)'],
+      critical_gaps: ['AWS Production Deployment', 'Kubernetes Cluster Management'],
+      summary: 'Outstanding Full Stack AI Candidate with strong practical experience in 21-Agent Groq LLM pipelines, Next.js 16, and FastAPI backends.'
+    }
   },
   {
     id: 'GapDetector',

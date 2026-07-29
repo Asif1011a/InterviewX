@@ -31,7 +31,7 @@ export default function Nav() {
           }}>
             <Cpu size={16} color="white" />
           </div>
-          <span style={{ fontFamily: 'Space Grotesk', fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>Mission Control</span>
+          <span style={{ fontFamily: 'Space Grotesk', fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>InterviewX</span>
         </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginLeft: 'auto' }}>

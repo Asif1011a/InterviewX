@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react';
 import { AuthHelpers, AuthUser } from '@/lib/auth';
 
 const NAV = [
-  { href:'/',          icon:<Home size={17}/>,         label:'Home',           desc:'Mission Control Home' },
+  { href:'/',          icon:<Home size={17}/>,         label:'Home',           desc:'InterviewX Home' },
   { href:'/setup',     icon:<Zap size={17}/>,          label:'New Session',    desc:'Start interview setup', badge:'Start' },
   { href:'/dashboard', icon:<BarChart2 size={17}/>,    label:'Dashboard',      desc:'Performance analytics' },
   { href:'/practice',  icon:<BookOpen size={17}/>,     label:'Practice',       desc:'Flip card drills' },
@@ -52,8 +52,7 @@ export default function Sidebar() {
             <Cpu size={18} color="white"/>
           </div>
           <div>
-            <p style={{fontFamily:'Space Grotesk',fontWeight:900,fontSize:'0.92rem',color:'white',margin:0,lineHeight:1.1}}>Mission</p>
-            <p style={{fontFamily:'Space Grotesk',fontWeight:900,fontSize:'0.92rem',color:'#a5b4fc',margin:0,lineHeight:1.1}}>Control</p>
+            <p style={{fontFamily:'Space Grotesk',fontWeight:900,fontSize:'1.1rem',color:'white',margin:0,lineHeight:1.1}}>Interview<span style={{color:'#818cf8'}}>X</span></p>
           </div>
         </Link>
       </div>

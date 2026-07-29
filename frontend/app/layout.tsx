@@ -4,7 +4,7 @@ import MainShell from '@/components/MainShell';
 import MouseSpotlight from '@/components/MouseSpotlight';
 
 export const metadata: Metadata = {
-  title: 'AI Placement Mission Control',
+  title: 'InterviewX - AI Placement Platform',
   description: '21 specialized AI agents prepare you for your dream interview.',
 };
 
