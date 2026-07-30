@@ -613,29 +613,26 @@ function InterviewCall() {
       rec.onstart = () => setMicOn(true);
 
       rec.onresult = (e: any) => {
-        let finalAcc = '';
+        let sessionFinal = '';
         let interimAcc = '';
 
-        for (let i = 0; i < e.results.length; i++) {
+        for (let i = e.resultIndex; i < e.results.length; i++) {
           const t = e.results[i][0].transcript;
           if (e.results[i].isFinal) {
-            finalAcc += t + ' ';
+            sessionFinal += t + ' ';
           } else {
             interimAcc += t;
           }
         }
 
-        setTranscript(interimAcc);
-        const newText = (finalAcc + interimAcc).trim();
-        if (newText) {
-          setAnswer(prev => {
-            const base = prev.trim();
-            // Append if new phrase or update
-            if (!base) return newText;
-            if (base.toLowerCase().includes(newText.toLowerCase())) return base;
-            return `${base} ${newText}`;
-          });
+        if (sessionFinal) {
+          const updated = (finalTextRef.current + ' ' + sessionFinal).replace(/\s+/g, ' ').trim();
+          finalTextRef.current = updated;
         }
+
+        setTranscript(interimAcc);
+        const full = (finalTextRef.current + (interimAcc ? ' ' + interimAcc : '')).replace(/\s+/g, ' ').trim();
+        setAnswer(full);
       };
 
       rec.onerror = (e: any) => {
@@ -1143,11 +1140,12 @@ function InterviewCall() {
             {inputMode === 'voice' ? (
               <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
                 <textarea
-                  value={transcript ? `${answer}${answer ? ' ' : ''}${transcript}` : answer}
+                  value={answer}
                   onChange={e => {
                     const val = e.target.value;
                     setAnswer(val);
                     finalTextRef.current = val;
+                    setTranscript('');
                   }}
                   placeholder={micOn ? '🎙 Listening… speak your answer clearly (you can click and edit any word mismatch anytime)...' : 'Transcription will appear here... Click and edit any misrecognized words directly with your keyboard!'}
                   rows={4}
