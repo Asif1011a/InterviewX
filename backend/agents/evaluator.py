@@ -11,8 +11,10 @@ Rubric Dimensions (Integer scores 1 to 10):
 - structure_score: Logical flow, organized narrative, and STAR format alignment (1 to 10).
 - depth_score: Specificity, real-world examples, metrics, and handling of technical nuances (1 to 10).
 
-Relevance Evaluation Rule (CRITICAL):
-- If the candidate's answer is IRRELEVANT or OFF-TOPIC regarding the asked question (e.g. talking about unrelated topics, sports, movies, weather, or answering a different question), set 'is_irrelevant' to true, set content_score to 1, and write a clear 1-sentence 'relevance_explanation' explaining why the answer is off-topic.
+Relevance Guidelines (BE CONSERVATIVE & FAIR):
+- By default, ALL candidate answers regarding technical topics, software engineering, projects, team collaboration, or interview questions are RELEVANT ('is_irrelevant': false).
+- ONLY mark 'is_irrelevant': true IF AND ONLY IF the candidate is talking about completely non-technical, random off-topic subjects (e.g. movies, sports, recipes, weather, or random gibberish).
+- If candidate attempts to answer the question, 'is_irrelevant' MUST BE FALSE.
 
 Rules:
 1. 'overall_score' MUST be the exact average (mean) of all 5 dimension scores on a 1.0 to 10.0 scale.
@@ -33,6 +35,15 @@ JSON Schema:
   "missing_points": ["Explanation of indexing strategy", "Handling concurrency lock contention"],
   "strengths": ["Clear explanation of Redis caching", "Quantified 40% latency reduction"]
 }"""
+
+# Keywords that indicate candidate is providing a valid technical / professional answer
+RELEVANT_KEYWORDS = {
+    "project", "team", "devops", "code", "build", "test", "deploy", "agile", "database",
+    "api", "server", "system", "data", "process", "work", "used", "implemented", "handled",
+    "worked", "application", "methodology", "pipeline", "git", "ci/cd", "service", "bug",
+    "issue", "feature", "react", "node", "python", "java", "sql", "experience", "role",
+    "task", "result", "situation", "action", "solved", "created", "developed", "managed"
+}
 
 async def evaluate_answer(question: str, answer: str, topic: str, role: str) -> dict:
     ans_clean = answer.strip().lower()
@@ -77,17 +88,23 @@ Candidate Answer:
             res = {}
 
     is_irrelevant = bool(res.get("is_irrelevant", False))
-    content = max(1, min(10, int(res.get("content_score", 1 if is_irrelevant else 6))))
+
+    # Python Algorithmic Safeguard: If candidate answer contains ANY relevant technical/professional keywords, override is_irrelevant to False!
+    words_in_ans = set(re.findall(r'\w+', ans_clean))
+    if is_irrelevant and (words_in_ans & RELEVANT_KEYWORDS or len(words_in_ans) > 8):
+        is_irrelevant = False
+
+    content = max(1, min(10, int(res.get("content_score", 6))))
     clarity = max(1, min(10, int(res.get("clarity_score", 6))))
     confidence = max(1, min(10, int(res.get("confidence_score", 6))))
     structure = max(1, min(10, int(res.get("structure_score", 6))))
-    depth = max(1, min(10, int(res.get("depth_score", 1 if is_irrelevant else 6))))
+    depth = max(1, min(10, int(res.get("depth_score", 6))))
 
     overall = round((content + clarity + confidence + structure + depth) / 5.0, 1)
 
     rel_exp = res.get("relevance_explanation") or ""
     if is_irrelevant and not rel_exp:
-        rel_exp = f"Your response is off-topic and does not address the specific technical core of '{question}'."
+        rel_exp = f"Your response is off-topic and does not address the question about '{topic}'."
 
     return {
         "content_score": content,
@@ -98,7 +115,7 @@ Candidate Answer:
         "overall_score": overall,
         "is_dont_know": False,
         "is_irrelevant": is_irrelevant,
-        "relevance_explanation": rel_exp,
-        "missing_points": res.get("missing_points") or [f"Answer failed to address {topic}."],
+        "relevance_explanation": rel_exp if is_irrelevant else "",
+        "missing_points": res.get("missing_points") or [f"Provide specific technical details for {topic}."],
         "strengths": res.get("strengths") or ["Clear vocal tone."]
     }
