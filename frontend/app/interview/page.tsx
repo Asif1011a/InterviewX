@@ -714,6 +714,8 @@ function InterviewCall() {
 
       const overall = evalObj?.overall_score ?? 0;
       const isDontKnow = evalObj?.is_dont_know ?? false;
+      const isIrrelevant = evalObj?.is_irrelevant ?? false;
+      const relExp = evalObj?.relevance_explanation || 'Your answer appears off-topic.';
       const tip = res?.coaching?.tips?.[0] || res?.coach?.tips?.[0] || 'Keep learning and practicing!';
 
       // Special motivating feedback if candidate said "I don't know" or skipped
@@ -726,6 +728,20 @@ function InterviewCall() {
           const next = qIndex + 1;
           if (next < planRef.current.length) setTimeout(() => askQuestion(next), 400);
           else { setPhase('complete'); speak('Technical interview complete! Great effort today.'); }
+        });
+        return;
+      }
+
+      // Off-topic / Irrelevant answer warning
+      if (isIrrelevant) {
+        setIsFollowUp(false);
+        setFollowUpQ('');
+        setPhase('feedback');
+        const fbText = `Notice: Your answer appears off-topic and does not address the question asked. ${relExp} In technical interviews, staying directly focused on the question is critical. Let's move to the next question.`;
+        speak(fbText, () => {
+          const next = qIndex + 1;
+          if (next < planRef.current.length) setTimeout(() => askQuestion(next), 400);
+          else { setPhase('complete'); speak('Technical interview complete!'); }
         });
         return;
       }
@@ -1265,6 +1281,16 @@ function InterviewCall() {
                     })}
                   </div>
                 </div>
+
+                {/* Irrelevant / Off-Topic Warning */}
+                {evalData?.evaluation?.is_irrelevant && (
+                  <div style={{padding:'12px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:12}}>
+                    <div style={{fontSize:'0.65rem', fontWeight:800, color:'#f87171', letterSpacing:'0.08em', marginBottom:6}}>⚠️ OFF-TOPIC ANSWER DETECTED</div>
+                    <p style={{margin:0, fontSize:'0.72rem', color:'#fca5a5', lineHeight:1.45}}>
+                      {safeString(evalData.evaluation.relevance_explanation || 'Your response did not address the specific question asked. Focus directly on the technical core of the question.')}
+                    </p>
+                  </div>
+                )}
 
                 {/* Coach Says */}
                 {(evalData?.coaching?.tips || evalData?.coach?.tips) && (

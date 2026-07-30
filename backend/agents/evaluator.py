@@ -11,12 +11,8 @@ Rubric Dimensions (Integer scores 1 to 10):
 - structure_score: Logical flow, organized narrative, and STAR format alignment (1 to 10).
 - depth_score: Specificity, real-world examples, metrics, and handling of technical nuances (1 to 10).
 
-Scoring Guidelines:
-- Exceptional/FAANG-level answer with concrete metrics and specifics: 8 to 10
-- Good answer with minor missing details: 6 to 7
-- Average or basic answer lacking depth: 4 to 5
-- Weak, extremely short, or vague answer: 1 to 3
-- "I don't know" / Skipped / Unattempted: 0
+Relevance Evaluation Rule (CRITICAL):
+- If the candidate's answer is IRRELEVANT or OFF-TOPIC regarding the asked question (e.g. talking about unrelated topics, sports, movies, weather, or answering a different question), set 'is_irrelevant' to true, set content_score to 1, and write a clear 1-sentence 'relevance_explanation' explaining why the answer is off-topic.
 
 Rules:
 1. 'overall_score' MUST be the exact average (mean) of all 5 dimension scores on a 1.0 to 10.0 scale.
@@ -32,6 +28,8 @@ JSON Schema:
   "structure_score": 7,
   "depth_score": 8,
   "overall_score": 7.2,
+  "is_irrelevant": false,
+  "relevance_explanation": "",
   "missing_points": ["Explanation of indexing strategy", "Handling concurrency lock contention"],
   "strengths": ["Clear explanation of Redis caching", "Quantified 40% latency reduction"]
 }"""
@@ -54,6 +52,8 @@ async def evaluate_answer(question: str, answer: str, topic: str, role: str) -> 
             "depth_score": 0,
             "overall_score": 0.0,
             "is_dont_know": True,
+            "is_irrelevant": False,
+            "relevance_explanation": "",
             "missing_points": [f"Candidate skipped or indicated un-learned concept for '{topic}'.", "Requires foundational learning path study."],
             "strengths": ["Honest identification of an un-learned technical topic."]
         }
@@ -76,14 +76,18 @@ Candidate Answer:
         except json.JSONDecodeError:
             res = {}
 
-    # Ensure deterministic out-of-10 scoring & exact mean overall_score
-    content = max(1, min(10, int(res.get("content_score", 6))))
+    is_irrelevant = bool(res.get("is_irrelevant", False))
+    content = max(1, min(10, int(res.get("content_score", 1 if is_irrelevant else 6))))
     clarity = max(1, min(10, int(res.get("clarity_score", 6))))
     confidence = max(1, min(10, int(res.get("confidence_score", 6))))
     structure = max(1, min(10, int(res.get("structure_score", 6))))
-    depth = max(1, min(10, int(res.get("depth_score", 6))))
+    depth = max(1, min(10, int(res.get("depth_score", 1 if is_irrelevant else 6))))
 
     overall = round((content + clarity + confidence + structure + depth) / 5.0, 1)
+
+    rel_exp = res.get("relevance_explanation") or ""
+    if is_irrelevant and not rel_exp:
+        rel_exp = f"Your response is off-topic and does not address the specific technical core of '{question}'."
 
     return {
         "content_score": content,
@@ -93,6 +97,8 @@ Candidate Answer:
         "depth_score": depth,
         "overall_score": overall,
         "is_dont_know": False,
-        "missing_points": res.get("missing_points") or ["Provide more specific technical metrics.", "Explain trade-offs and edge cases."],
-        "strengths": res.get("strengths") or ["Good communication clarity.", "Relevant concepts mentioned."]
+        "is_irrelevant": is_irrelevant,
+        "relevance_explanation": rel_exp,
+        "missing_points": res.get("missing_points") or [f"Answer failed to address {topic}."],
+        "strengths": res.get("strengths") or ["Clear vocal tone."]
     }
