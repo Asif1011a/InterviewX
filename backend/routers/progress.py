@@ -28,8 +28,8 @@ async def get_history(student_name: str):
     cursor = db.sessions.find(
         {"student_name": student_name},
         {"_id": 1, "target_role": 1, "analytics": 1, "created_at": 1}
-    ).sort("created_at", -1).limit(10)
-    sessions = await cursor.to_list(length=10)
+    ).sort("created_at", -1).limit(500)
+    sessions = await cursor.to_list(length=500)
     for s in sessions:
         s["_id"] = str(s["_id"])
     return build_progress_history(sessions)

@@ -5,7 +5,7 @@ from typing import Optional
 from pydantic import BaseModel
 from jose import jwt, JWTError
 from db.mongo import get_db
-import os, hashlib, secrets
+import os, hashlib, secrets, re
 
 SECRET_KEY = os.getenv("JWT_SECRET", "mission_control_super_secret_key_2024")
 ALGORITHM  = "HS256"
@@ -112,10 +112,13 @@ async def user_sessions(current_user: dict = Depends(get_current_user)):
     db = get_db()
     user_id = current_user.get("sub", "")
     user_name = current_user.get("name", "")
+    user_email = current_user.get("email", "")
     query: dict = {"$or": [{"user_id": user_id}]}
     if user_name:
-        query["$or"].append({"student_name": {"$regex": f"^{user_name.strip()}$", "$options": "i"}})
-    cursor = db.sessions.find(query).sort("created_at", -1).limit(30)
+        query["$or"].append({"student_name": {"$regex": f"^{re.escape(user_name.strip())}$", "$options": "i"}})
+    if user_email:
+        query["$or"].append({"student_name": {"$regex": f"^{re.escape(user_email.strip())}$", "$options": "i"}})
+    cursor = db.sessions.find(query).sort("created_at", -1).limit(500)
     sessions = []
     async for s in cursor:
         s["_id"] = str(s["_id"])

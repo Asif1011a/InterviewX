@@ -34,6 +34,22 @@ async def create_session(body: SessionCreate, user_id: Optional[str] = None):
         "created_at": datetime.utcnow().isoformat()
     }
     result = await db.sessions.insert_one(doc)
+    
+    # Automatically update total_sessions & last_active in MongoDB users collection
+    try:
+        if user_id and ObjectId.is_valid(user_id):
+            await db.users.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$inc": {"total_sessions": 1}, "$set": {"last_active": datetime.utcnow().isoformat()}}
+            )
+        elif body.student_name:
+            await db.users.update_one(
+                {"$or": [{"name": body.student_name}, {"email": body.student_name}]},
+                {"$inc": {"total_sessions": 1}, "$set": {"last_active": datetime.utcnow().isoformat()}}
+            )
+    except Exception:
+        pass
+
     return {"session_id": str(result.inserted_id)}
 
 @router.post("/{session_id}/analyze")
