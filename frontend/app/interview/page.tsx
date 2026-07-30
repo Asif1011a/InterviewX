@@ -587,95 +587,73 @@ function InterviewCall() {
   const finalTextRef = useRef('');
 
   const startListening = useCallback(() => {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) {
-      alert('Use Google Chrome or Microsoft Edge for voice recognition.');
+      showToast('Use Google Chrome or Microsoft Edge for voice recognition.');
       return;
     }
 
-    // Stop any existing loop
+    // Reset previous session state
     listeningActiveRef.current = false;
     try { recogRef.current?.abort(); } catch {}
+    recogRef.current = null;
 
-    // Always reset to empty on fresh start
-    finalTextRef.current = '';
-    setAnswer('');
     setTranscript('');
     setMicOn(true);
     listeningActiveRef.current = true;
 
-    const makeRec = (): any => {
-      const rec = new SR();
-      rec.continuous = false; // continuous = false prevents Chrome Windows freeze
-      rec.interimResults = true;
-      rec.lang = 'en-IN'; // Explicit Indian English locale for maximum technical term accuracy
+    // 300ms audio release delay prevents Windows TTS speaker driver from locking microphone
+    setTimeout(() => {
+      if (!listeningActiveRef.current) return;
+      try {
+        const rec = new SR();
+        rec.continuous = true;
+        rec.interimResults = true;
+        rec.lang = typeof navigator !== 'undefined' && navigator.language ? navigator.language : 'en-IN';
 
-      rec.onstart = () => setMicOn(true);
+        rec.onstart = () => {
+          setMicOn(true);
+        };
 
-      rec.onresult = (e: any) => {
-        let sessionFinal = '';
-        let interimAcc = '';
-
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-          const t = e.results[i][0].transcript;
-          if (e.results[i].isFinal) {
-            sessionFinal += t + ' ';
-          } else {
-            interimAcc += t;
+        rec.onresult = (e: any) => {
+          let fullAcc = '';
+          for (let i = 0; i < e.results.length; i++) {
+            const transcriptText = e.results[i][0].transcript;
+            fullAcc += transcriptText + ' ';
           }
-        }
+          const cleanText = fullAcc.replace(/\s+/g, ' ').trim();
+          if (cleanText) {
+            setAnswer(cleanText);
+            finalTextRef.current = cleanText;
+          }
+        };
 
-        if (sessionFinal) {
-          const updated = (finalTextRef.current + ' ' + sessionFinal).replace(/\s+/g, ' ').trim();
-          finalTextRef.current = updated;
-        }
+        rec.onerror = (e: any) => {
+          console.warn('STT Engine Notice:', e.error);
+          if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+            listeningActiveRef.current = false;
+            setMicOn(false);
+            showToast('Microphone blocked. Click lock icon in browser URL bar → Allow Microphone.');
+          }
+        };
 
-        setTranscript(interimAcc);
-        const full = (finalTextRef.current + (interimAcc ? ' ' + interimAcc : '')).replace(/\s+/g, ' ').trim();
-        setAnswer(full);
-      };
+        rec.onend = () => {
+          if (listeningActiveRef.current) {
+            setTimeout(() => {
+              if (!listeningActiveRef.current) return;
+              try { rec.start(); } catch {}
+            }, 100);
+          } else {
+            setMicOn(false);
+          }
+        };
 
-      rec.onerror = (e: any) => {
-        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-          listeningActiveRef.current = false;
-          setMicOn(false);
-          showToast('Microphone blocked. Click lock icon in URL bar → Allow Microphone.');
-        } else if (listeningActiveRef.current && e.error !== 'aborted') {
-          setTimeout(() => {
-            if (!listeningActiveRef.current) return;
-            try {
-              const next = makeRec();
-              recogRef.current = next;
-              next.start();
-            } catch {}
-          }, 50);
-        }
-      };
-
-      rec.onend = () => {
-        if (listeningActiveRef.current) {
-          setTimeout(() => {
-            if (!listeningActiveRef.current) return;
-            try {
-              const next = makeRec();
-              recogRef.current = next;
-              next.start();
-            } catch {}
-          }, 50);
-        } else {
-          setMicOn(false);
-        }
-      };
-
-      return rec;
-    };
-
-    const first = makeRec();
-    recogRef.current = first;
-    hasGrantedMicRef.current = true;
-    try {
-      first.start();
-    } catch {}
+        recogRef.current = rec;
+        rec.start();
+      } catch (err) {
+        console.error('STT Start Exception:', err);
+      }
+    }, 300);
   }, []);
 
 
