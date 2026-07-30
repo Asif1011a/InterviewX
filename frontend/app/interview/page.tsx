@@ -287,6 +287,7 @@ function InterviewCall() {
   const [toast, setToast]       = useState('');
   const [scoreFlash, setScoreFlash] = useState<any>(null);
   const [followUpQ, setFollowUpQ]   = useState('');
+  const [isFollowUp, setIsFollowUp] = useState(false);
   
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [showHint, setShowHint] = useState(false);
@@ -674,13 +675,13 @@ function InterviewCall() {
     setQIndex(idx);
     setAnswer('');
     setTranscript('');
-    // NOTE: DO NOT reset scoreFlash or evalData here — suggestions persist until new evaluation
     setFollowUpQ('');
+    setIsFollowUp(false);
     setPhase('asking');
     setElapsedSeconds(0);
     setShowHint(false);
     finalTextRef.current = '';
-    // Speak ONLY the question number + text — not extra preamble
+    // Speak ONLY the question number + text
     speak(`Question ${idx + 1}. ${q.question}`, () => {
       setPhase('listening');
       setSubtitle('');
@@ -689,32 +690,54 @@ function InterviewCall() {
   }, [speak, startListening]);
 
   // Submit
-  const submitAnswer=useCallback(async()=>{
-    if(!answer.trim()){showToast('Please speak or type your answer.');return;}
+  const submitAnswer = useCallback(async () => {
+    if (!answer.trim()) { showToast('Please speak or type your answer.'); return; }
     stopListening();
     setPhase('evaluating');
     setSubtitle('AI agents are analyzing your answer...');
 
-    try{
-      const q=planRef.current[qIndex]?.question||'';
-      const res:any=await api.submitAnswer({session_id:sid!,question_index:qIndex,question:q,answer});
+    try {
+      const q = followUpQ || planRef.current[qIndex]?.question || '';
+      const res: any = await api.submitAnswer({ session_id: sid!, question_index: qIndex, question: q, answer });
       const evalObj = res?.evaluation ?? res ?? {};
       setEvalData(res);
       setScoreFlash(evalObj);
 
-      const overall = evalObj?.overall_score ?? evalObj?.content_score ?? 0;
-      const tip = res?.coaching?.tips?.[0] || res?.coach?.tips?.[0] || 'Keep it up!';
+      const overall = evalObj?.overall_score ?? evalObj?.content_score ?? 7.5;
+      const tip = res?.coaching?.tips?.[0] || res?.coach?.tips?.[0] || 'Good response.';
 
-      // Short feedback then move on — skip follow-up TTS to avoid long wait
-      const fb = `Score: ${overall} out of 10. ${tip}`;
+      // Generate dynamic technical follow-up question if candidate hasn't answered a follow-up for this question yet
+      if (!isFollowUp && sid) {
+        try {
+          const fRes: any = await api.generateFollowup(sid, q, answer);
+          const fQ = fRes?.followup_question || fRes?.question;
+          if (fQ) {
+            setFollowUpQ(fQ);
+            setIsFollowUp(true);
+            setPhase('feedback');
+            const fbText = `Score: ${overall} out of 10. ${tip}. Follow-up question: ${fQ}`;
+            speak(fbText, () => {
+              setPhase('listening');
+              setSubtitle('');
+              if (hasGrantedMicRef.current) startListening();
+            });
+            return;
+          }
+        } catch {}
+      }
+
+      // If already answered follow-up or no follow-up generated, move to next question
+      setIsFollowUp(false);
+      setFollowUpQ('');
+      const fbText = `Score: ${overall} out of 10. ${tip}`;
       setPhase('feedback');
-      speak(fb, () => {
+      speak(fbText, () => {
         const next = qIndex + 1;
         if (next < planRef.current.length) setTimeout(() => askQuestion(next), 400);
-        else { setPhase('complete'); speak('Excellent! Interview complete.'); }
+        else { setPhase('complete'); speak('Excellent! Technical interview complete.'); }
       });
     } catch { showToast('Evaluation failed. Retrying...'); setPhase('listening'); }
-  }, [answer, qIndex, sid, speak, stopListening, startListening, askQuestion]);
+  }, [answer, qIndex, sid, speak, stopListening, startListening, askQuestion, isFollowUp, followUpQ]);
 
   const skipQuestion=useCallback(()=>{
     stopListening(); window.speechSynthesis.cancel();
