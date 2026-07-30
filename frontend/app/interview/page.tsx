@@ -703,10 +703,25 @@ function InterviewCall() {
       setEvalData(res);
       setScoreFlash(evalObj);
 
-      const overall = evalObj?.overall_score ?? evalObj?.content_score ?? 7.5;
-      const tip = res?.coaching?.tips?.[0] || res?.coach?.tips?.[0] || 'Good response.';
+      const overall = evalObj?.overall_score ?? 0;
+      const isDontKnow = evalObj?.is_dont_know ?? false;
+      const tip = res?.coaching?.tips?.[0] || res?.coach?.tips?.[0] || 'Keep learning and practicing!';
 
-      // Generate dynamic technical follow-up question if candidate hasn't answered a follow-up for this question yet
+      // Special motivating feedback if candidate said "I don't know" or skipped
+      if (isDontKnow) {
+        setIsFollowUp(false);
+        setFollowUpQ('');
+        setPhase('feedback');
+        const fbText = `That's completely fine! No candidate knows every single concept. I've added this topic to your 7-day study roadmap and provided a model answer below. Let's move to the next question.`;
+        speak(fbText, () => {
+          const next = qIndex + 1;
+          if (next < planRef.current.length) setTimeout(() => askQuestion(next), 400);
+          else { setPhase('complete'); speak('Technical interview complete! Great effort today.'); }
+        });
+        return;
+      }
+
+      // Standard technical answer handling: generate follow-up if first attempt
       if (!isFollowUp && sid) {
         try {
           const fRes: any = await api.generateFollowup(sid, q, answer);

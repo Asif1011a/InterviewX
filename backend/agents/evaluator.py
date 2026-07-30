@@ -16,6 +16,7 @@ Scoring Guidelines:
 - Good answer with minor missing details: 6 to 7
 - Average or basic answer lacking depth: 4 to 5
 - Weak, extremely short, or vague answer: 1 to 3
+- "I don't know" / Skipped / Unattempted: 0
 
 Rules:
 1. 'overall_score' MUST be the exact average (mean) of all 5 dimension scores on a 1.0 to 10.0 scale.
@@ -36,6 +37,27 @@ JSON Schema:
 }"""
 
 async def evaluate_answer(question: str, answer: str, topic: str, role: str) -> dict:
+    ans_clean = answer.strip().lower()
+    dont_know_phrases = [
+        "i don't know", "dont know", "no idea", "i have no idea", "not sure",
+        "i am not sure", "pass", "skip", "i don't have experience", "dunno",
+        "i do not know", "i'm not sure", "no concept", "no answer", "idk"
+    ]
+    is_dont_know = any(phrase in ans_clean for phrase in dont_know_phrases) or len(ans_clean.split()) <= 2
+
+    if is_dont_know:
+        return {
+            "content_score": 0,
+            "clarity_score": 0,
+            "confidence_score": 0,
+            "structure_score": 0,
+            "depth_score": 0,
+            "overall_score": 0.0,
+            "is_dont_know": True,
+            "missing_points": [f"Candidate skipped or indicated un-learned concept for '{topic}'.", "Requires foundational learning path study."],
+            "strengths": ["Honest identification of an un-learned technical topic."]
+        }
+
     user_content = f"""Target Role: {role}
 Topic/Domain: {topic}
 
@@ -70,6 +92,7 @@ Candidate Answer:
         "structure_score": structure,
         "depth_score": depth,
         "overall_score": overall,
+        "is_dont_know": False,
         "missing_points": res.get("missing_points") or ["Provide more specific technical metrics.", "Explain trade-offs and edge cases."],
         "strengths": res.get("strengths") or ["Good communication clarity.", "Relevant concepts mentioned."]
     }
