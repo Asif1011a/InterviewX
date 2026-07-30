@@ -265,6 +265,15 @@ function AIAvatar({ phase, speaking }: { phase:AIPhase; speaking:boolean }) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
+function safeString(val: any): string {
+  if (val === null || val === undefined) return '';
+  if (typeof val === 'string') return val;
+  if (typeof val === 'object') {
+    return Object.entries(val).map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`).join(' | ');
+  }
+  return String(val);
+}
+
 function InterviewCall() {
   const searchParams=useSearchParams();
   const sid=searchParams.get('sid');
@@ -1103,17 +1112,26 @@ function InterviewCall() {
             </div>
 
             {inputMode === 'voice' ? (
-              <div style={{flex:1, overflowY:'auto', background:'rgba(0,0,0,0.3)', borderRadius:8, border:'1px solid rgba(255,255,255,0.04)', padding:'12px 16px'}}>
-                {answer ? (
-                  <p style={{margin:0, fontSize:'0.95rem', lineHeight:1.6, color:'#86efac', wordBreak:'break-word'}}>
-                    {answer}
-                    {transcript && <span style={{color:'#fbbf24', fontStyle:'italic'}}> {transcript}</span>}
-                  </p>
-                ) : (
-                  <p style={{margin:0, fontSize:'0.9rem', color:'rgba(255,255,255,0.25)', fontStyle:'italic'}}>
-                    {micOn ? '🎙 Listening… speak your answer clearly' : 'Transcription will appear here...'}
-                  </p>
-                )}
+              <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+                <textarea
+                  value={transcript ? `${answer}${answer ? ' ' : ''}${transcript}` : answer}
+                  onChange={e => {
+                    const val = e.target.value;
+                    setAnswer(val);
+                    finalTextRef.current = val;
+                  }}
+                  placeholder={micOn ? '🎙 Listening… speak your answer clearly (you can click and edit any word mismatch anytime)...' : 'Transcription will appear here... Click and edit any misrecognized words directly with your keyboard!'}
+                  rows={4}
+                  style={{
+                    width: '100%', flex: 1, padding: '12px 16px', borderRadius: 8,
+                    background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(52,211,153,0.3)',
+                    color: '#86efac', fontFamily: 'Inter, sans-serif', fontSize: '0.95rem',
+                    lineHeight: 1.6, outline: 'none', resize: 'none', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.5)'
+                  }}
+                />
+                <div style={{ position: 'absolute', bottom: 8, right: 12, fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: 4, pointerEvents: 'none' }}>
+                  <span>✏ Click anywhere in box to edit text</span>
+                </div>
               </div>
             ) : (
               <div style={{flex:1, display:'flex', flexDirection:'column', gap:8, overflow:'hidden'}}>
@@ -1253,12 +1271,12 @@ function InterviewCall() {
                   <div style={{padding:'12px', background:'rgba(99,102,241,0.07)', border:'1px solid rgba(99,102,241,0.18)', borderRadius:12}}>
                     <div style={{fontSize:'0.65rem', fontWeight:800, color:'#a5b4fc', letterSpacing:'0.08em', marginBottom:8}}>🏋 COACH SAYS</div>
                     <div style={{display:'flex', flexDirection:'column', gap:6}}>
-                      {(evalData?.coaching?.tips || evalData?.coach?.tips || []).map((tip:string,i:number)=>(
+                      {(evalData?.coaching?.tips || evalData?.coach?.tips || []).map((tip:any,i:number)=>(
                         <div key={i} style={{display:'flex', gap:7, alignItems:'flex-start'}}>
                           <div style={{width:16, height:16, borderRadius:'50%', background:'rgba(99,102,241,0.2)', border:'1px solid rgba(99,102,241,0.4)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginTop:1}}>
                             <span style={{fontSize:'0.5rem', color:'#a5b4fc', fontWeight:800}}>{i+1}</span>
                           </div>
-                          <p style={{margin:0, fontSize:'0.72rem', color:'rgba(255,255,255,0.75)', lineHeight:1.45}}>{tip}</p>
+                          <p style={{margin:0, fontSize:'0.72rem', color:'rgba(255,255,255,0.75)', lineHeight:1.45}}>{safeString(tip)}</p>
                         </div>
                       ))}
                     </div>
@@ -1269,8 +1287,8 @@ function InterviewCall() {
                 {evalData?.evaluation?.strengths && evalData.evaluation.strengths.length > 0 && (
                   <div style={{padding:'10px 12px', background:'rgba(16,185,129,0.06)', border:'1px solid rgba(16,185,129,0.15)', borderRadius:10}}>
                     <div style={{fontSize:'0.62rem', fontWeight:800, color:'#34d399', letterSpacing:'0.07em', marginBottom:6}}>✅ STRENGTHS</div>
-                    {(Array.isArray(evalData.evaluation.strengths)?evalData.evaluation.strengths:[evalData.evaluation.strengths]).map((s:string,i:number)=>(
-                      <p key={i} style={{margin:'0 0 4px', fontSize:'0.7rem', color:'rgba(255,255,255,0.7)', lineHeight:1.4}}>· {s}</p>
+                    {(Array.isArray(evalData.evaluation.strengths)?evalData.evaluation.strengths:[evalData.evaluation.strengths]).map((s:any,i:number)=>(
+                      <p key={i} style={{margin:'0 0 4px', fontSize:'0.7rem', color:'rgba(255,255,255,0.7)', lineHeight:1.4}}>· {safeString(s)}</p>
                     ))}
                   </div>
                 )}
@@ -1279,17 +1297,17 @@ function InterviewCall() {
                 {evalData?.evaluation?.weaknesses && evalData.evaluation.weaknesses.length > 0 && (
                   <div style={{padding:'10px 12px', background:'rgba(239,68,68,0.06)', border:'1px solid rgba(239,68,68,0.15)', borderRadius:10}}>
                     <div style={{fontSize:'0.62rem', fontWeight:800, color:'#f87171', letterSpacing:'0.07em', marginBottom:6}}>⚠ IMPROVE NEXT TIME</div>
-                    {(Array.isArray(evalData.evaluation.weaknesses)?evalData.evaluation.weaknesses:[evalData.evaluation.weaknesses]).map((w:string,i:number)=>(
-                      <p key={i} style={{margin:'0 0 4px', fontSize:'0.7rem', color:'rgba(255,255,255,0.7)', lineHeight:1.4}}>· {w}</p>
+                    {(Array.isArray(evalData.evaluation.weaknesses)?evalData.evaluation.weaknesses:[evalData.evaluation.weaknesses]).map((w:any,i:number)=>(
+                      <p key={i} style={{margin:'0 0 4px', fontSize:'0.7rem', color:'rgba(255,255,255,0.7)', lineHeight:1.4}}>· {safeString(w)}</p>
                     ))}
                   </div>
                 )}
 
                 {/* Ideal Approach */}
-                {evalData?.coaching?.improved_answer && (
+                {(evalData?.coaching?.improved_answer || evalData?.coach?.improved_answer) && (
                   <div style={{padding:'10px 12px', background:'rgba(245,158,11,0.06)', border:'1px solid rgba(245,158,11,0.15)', borderRadius:10}}>
                     <div style={{fontSize:'0.62rem', fontWeight:800, color:'#fbbf24', letterSpacing:'0.07em', marginBottom:6}}>💡 IDEAL APPROACH</div>
-                    <p style={{margin:0, fontSize:'0.7rem', color:'rgba(255,255,255,0.7)', lineHeight:1.45, fontStyle:'italic'}}>"{evalData.coaching.improved_answer}"</p>
+                    <p style={{margin:0, fontSize:'0.7rem', color:'rgba(255,255,255,0.7)', lineHeight:1.45, fontStyle:'italic'}}>"{safeString(evalData?.coaching?.improved_answer || evalData?.coach?.improved_answer)}"</p>
                   </div>
                 )}
               </div>
