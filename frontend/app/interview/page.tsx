@@ -606,10 +606,9 @@ function InterviewCall() {
 
     const makeRec = (): any => {
       const rec = new SR();
-      rec.continuous = true;
+      rec.continuous = false; // continuous = false prevents Chrome Windows freeze
       rec.interimResults = true;
-      // Auto-detect candidate locale with fallback to en-IN / en-US for max accuracy on technical terms
-      rec.lang = (typeof navigator !== 'undefined' && navigator.language) ? navigator.language : 'en-IN';
+      rec.lang = 'en-IN'; // Explicit Indian English locale for maximum technical term accuracy
 
       rec.onstart = () => setMicOn(true);
 
@@ -627,10 +626,15 @@ function InterviewCall() {
         }
 
         setTranscript(interimAcc);
-        const combined = (finalAcc + interimAcc).trim();
-        if (combined) {
-          finalTextRef.current = combined;
-          setAnswer(combined);
+        const newText = (finalAcc + interimAcc).trim();
+        if (newText) {
+          setAnswer(prev => {
+            const base = prev.trim();
+            // Append if new phrase or update
+            if (!base) return newText;
+            if (base.toLowerCase().includes(newText.toLowerCase())) return base;
+            return `${base} ${newText}`;
+          });
         }
       };
 
@@ -638,7 +642,16 @@ function InterviewCall() {
         if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
           listeningActiveRef.current = false;
           setMicOn(false);
-          showToast('Microphone blocked. Click lock icon in browser bar → Allow Microphone.');
+          showToast('Microphone blocked. Click lock icon in URL bar → Allow Microphone.');
+        } else if (listeningActiveRef.current && e.error !== 'aborted') {
+          setTimeout(() => {
+            if (!listeningActiveRef.current) return;
+            try {
+              const next = makeRec();
+              recogRef.current = next;
+              next.start();
+            } catch {}
+          }, 50);
         }
       };
 
@@ -651,7 +664,7 @@ function InterviewCall() {
               recogRef.current = next;
               next.start();
             } catch {}
-          }, 100);
+          }, 50);
         } else {
           setMicOn(false);
         }
