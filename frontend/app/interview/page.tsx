@@ -313,6 +313,7 @@ function InterviewCall() {
   const [gazeStatus, setGazeStatus] = useState<string>('OPTIMAL FOCUS');
   const [postureStatus, setPostureStatus] = useState<string>('UPRIGHT & ASSERTIVE');
   const lastFrameDataRef = useRef<Uint8ClampedArray | null>(null);
+  const isCallActiveRef = useRef<boolean>(true);
 
   const runInterviewCode = async () => {
     setCodeExecuting(true);
@@ -404,7 +405,8 @@ function InterviewCall() {
 
   // TTS — polling fallback fixes Edge/Chrome bug where onend never fires
   const speak = useCallback((text: string, onEnd?: () => void) => {
-    if (muted) { onEnd?.(); return; }
+    if (!isCallActiveRef.current) return;
+    if (muted) { if (isCallActiveRef.current) onEnd?.(); return; }
 
     window.speechSynthesis.cancel();
 
@@ -426,10 +428,14 @@ function InterviewCall() {
       clearInterval(resumeId);
       setAiSpk(false);
       setSubtitle('');
-      onEnd?.();
+      if (isCallActiveRef.current) {
+        onEnd?.();
+      }
     };
 
-    u.onstart = () => setAiSpk(true);
+    u.onstart = () => {
+      if (isCallActiveRef.current) setAiSpk(true);
+    };
     u.onend   = finish;
     u.onerror = finish;
 
@@ -774,14 +780,38 @@ function InterviewCall() {
     else {setPhase('complete');speak('Interview complete!');}
   },[qIndex,askQuestion,speak,stopListening]);
 
-  const endCall=()=>{
-    window.speechSynthesis.cancel(); stopCamera(); recogRef.current?.stop();
-    router.push(sid?`/dashboard?sid=${sid}`:'/setup');
-  };
+  const endCall = useCallback(() => {
+    isCallActiveRef.current = false;
+    listeningActiveRef.current = false;
+    if (typeof window !== 'undefined') {
+      window.speechSynthesis.cancel();
+    }
+    try { recogRef.current?.abort(); } catch {}
+    try { recogRef.current?.stop(); } catch {}
+    recogRef.current = null;
+    stopCamera();
+    setMicOn(false);
+    setAiSpk(false);
+    setSubtitle('');
+    router.push(sid ? `/dashboard?sid=${sid}` : '/setup');
+  }, [sid, router, stopCamera]);
 
-  const showToast=(msg:string)=>{setToast(msg);setTimeout(()=>setToast(''),4000);};
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 4000); };
 
-  useEffect(()=>()=>{stopCamera();recogRef.current?.stop();window.speechSynthesis.cancel();},[stopCamera]);
+  useEffect(() => {
+    isCallActiveRef.current = true;
+    return () => {
+      isCallActiveRef.current = false;
+      listeningActiveRef.current = false;
+      if (typeof window !== 'undefined') {
+        window.speechSynthesis.cancel();
+      }
+      try { recogRef.current?.abort(); } catch {}
+      try { recogRef.current?.stop(); } catch {}
+      recogRef.current = null;
+      stopCamera();
+    };
+  }, [stopCamera]);
 
   const currentQ=followUpQ||planRef.current[qIndex]?.question||'';
   const currentHint = planRef.current[qIndex]?.hint || "Focus on your impact, specific examples, and the outcome.";
